@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ödev 3 - Tuğrul Gençoğlu (2019280030)</title>
+</head>
+<body>
+    <div class="container">
+        <p>Lütfen bilgilerin bulunduğu dosyayı seçiniz;</p>
+        <input type="file" id="infoFile" />
+        <p>Lütfen dosyayı kaydetmek istediğiniz ismi giriniz(varsayılan: output.txt);</p>
+        <input type="text" id="outputFileName" value="output.txt" />
+        <p>Chrome ile test edilmiştir.</p>
+    </div>
+    <script type="text/javascript">
+        let sortStudentByGrade = students => {
+            let min=0;
+            let temp;
+            for (let index = 0; index < students.length - 1; index++) {
+                for(let i=index+1; i<students.length; i++){
+                    if(students[i].grade < students[min].grade)
+                        min=i;
+                }
+                if(min != index){
+                    temp = students[index];
+                    students[index]=students[min];
+                    students[min]=temp;
+                }
+            }
+            return students;
+        };
+
+        document.querySelector("#infoFile").addEventListener("change", event => {
+           let reader = new FileReader();
+           let fileName = event.target.files[0];
+
+           reader.onload = e => {
+            let result = e.target.result.split("\n");
+            let questionCount = result.shift();
+            let correctAnswers = result.shift().split(",");
+            let studentList = [];
+            result.forEach(line => {
+                let answers = line.split(",");
+                
+                let studentNumber = answers.shift();
+                let grade = 0;
+                
+                answers.forEach((answer,index) => {  
+                    if(answer == correctAnswers[index]){
+                        grade = grade + 4;
+                    }else if(answer !== ""){
+                        grade = grade - 1;
+                    }
+                });
+                
+                if(grade < 0)
+                    grade = 0;
+
+                let normalizedGrade = 100*grade/(questionCount*4);
+                studentList.push({
+                    number: studentNumber,
+                    grade: normalizedGrade
+                });
+                
+            });
+            
+            studentList = sortStudentByGrade(studentList);
+            let minGrade = studentList[0].grade;
+            let maxGrade = studentList[studentList.length-1].grade;
+            let averageOfGrades = (minGrade+maxGrade) / 2;
+            let medianOfGrades = 0;
+            if(studentList.length % 2 == 0){
+                // for even numbers
+                medianOfGrades = (studentList[studentList.length/2].grade + studentList[studentList.length/2 + 1].grade) / 2;
+            }else{
+                // for odd numbers
+                studentList[(studentList.length+1)/2].grade;
+            }
+            let rangeOfGrades = maxGrade - minGrade;
+
+            let outputScheme = [
+                studentList.map( student => { return student.number+","+student.grade }).join("\n"),
+                [minGrade, maxGrade, averageOfGrades, medianOfGrades, rangeOfGrades].join(",")
+            ];
+
+            let blob = new Blob([outputScheme.join("\n")], {
+                "type": "text/plain"
+            });
+            let a = document.createElement("a");
+            a.download = document.querySelector("#outputFileName").value || "output.txt";
+            a.href = URL.createObjectURL(blob);
+            document.body.appendChild(a);
+            a.click();
+           }
+           reader.readAsText(fileName);
+        });
+    </script>
+</body>
+
+</html>
