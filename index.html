@@ -88,6 +88,9 @@
             let blob = new Blob([outputScheme.join("\n")], {
                 "type": "text/plain"
             });
+
+            // downloading a named file with javascript
+            // reference https://stackoverflow.com/a/34034881
             let a = document.createElement("a");
             a.download = document.querySelector("#outputFileName").value || "output.txt";
             a.href = URL.createObjectURL(blob);
